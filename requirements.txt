@@ -1,0 +1,2 @@
+dwave-ocean-sdk
+numpy~=1.25.0
