@@ -5,8 +5,11 @@ from collections import defaultdict
 
 
 qubo_name = "H"
+# qubo_name = "H'"
 
 strings = ["aaa", "aaa", "ddd"]
+# strings = ["aaa", "aaa", "aaa", "ddd"]
+# strings = ["abc", "def", "hij", "abm"]
 # strings = ["aaa", "aaa", "ddd", "ddd", "ddd"]
 # strings = ["aaa", "aaa", "ded", "ded", "ded", "ddd"]
 # strings = [
@@ -17,7 +20,9 @@ strings = ["aaa", "aaa", "ddd"]
 #     "abcmno"
 # ]
 
-A = 3
+# 4 strings will never cause chain breaks as Pegasus features K4.
+
+A = 2
 B = 1
 
 
@@ -44,7 +49,7 @@ def main():
 
     # ------- Run our QUBO on the QPU -------
     # Set up QPU parameters
-    chainstrength = 8
+    chainstrength = 0
     numruns = 100
 
     sampler = EmbeddingComposite(DWaveSampler())
@@ -81,12 +86,14 @@ def main():
             outputs[output] = {
                 "raw_outputs": [flat_one_hot_clst_str],
                 "cumulative_energy": E,
+                "weighted_energy": E * num_occurrences,
                 "num_occurrences": num_occurrences,
                 "count": 1
             }
         else:
             outputs[output]["raw_outputs"].append(flat_one_hot_clst_str)
             outputs[output]["cumulative_energy"] += E
+            outputs[output]["weighted_energy"] += E * num_occurrences
             outputs[output]["num_occurrences"] += num_occurrences
             outputs[output]["count"] += 1
 
@@ -97,10 +104,10 @@ def main():
     print()
 
     print('-' * 130)
-    print('{:>30s}{:>30s}{:^30s}'.format('Output', 'Average Energy', 'Occurrence Ratio'))
+    print('{:>30s}{:>30s}{:>30s}{:^30s}'.format('Output', 'Average Energy', 'Weighted Average Energy', 'Occurrence Ratio'))
     print('-' * 130)
     for output, output_data in outputs.items():
-        print('{:>30s}{:>30f}{:^30f}'.format(output, output_data["cumulative_energy"] / output_data["count"], output_data["num_occurrences"] / total_occurrences))
+        print('{:>30s}{:>30f}{:>30f}{:^30f}'.format(output, output_data["cumulative_energy"] / output_data["count"], output_data["weighted_energy"], output_data["num_occurrences"] / total_occurrences))
 
     dwave.inspector.show(response)
 
